@@ -5,6 +5,8 @@ import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {
