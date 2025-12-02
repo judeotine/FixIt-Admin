@@ -7,6 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "generate:secrets": "node scripts/generate-secrets.js",
     "postinstall": "npm rebuild lightningcss || true"
   },
   "dependencies": {
@@ -33,6 +34,7 @@
     "@radix-ui/react-use-layout-effect": "^1.1.1",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.81.1",
+    "@swc/helpers": "^0.5.17",
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-query": "^5.90.8",
     "@tanstack/react-table": "^8.21.3",
@@ -52,6 +54,7 @@
     "recharts": "^3.4.1",
     "resend": "^6.4.2",
     "sonner": "^2.0.7",
+    "styled-jsx": "^5.1.7",
     "tailwind-merge": "^3.4.0",
     "tslib": "^2.8.1",
     "vaul": "^1.1.2",

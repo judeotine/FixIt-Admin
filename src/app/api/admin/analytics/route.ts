@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient, createClient } from "@/lib/supabase/server";
 import { analyticsQuerySchema } from "@/lib/validations";
+import { WORKER_STATUS } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,9 +69,9 @@ export async function GET(request: NextRequest) {
           .lte("created_at", end.toISOString()),
         serviceSupabase.from("services").select("category, id").limit(1000),
         serviceSupabase
-          .from("workers")
-          .select("id, name, total_earnings")
-          .eq("status", "verified")
+          .from("worker_profiles")
+          .select("id, full_name, total_earnings")
+          .eq("verification_status", WORKER_STATUS.VERIFIED)
           .order("total_earnings", { ascending: false })
           .limit(10),
         serviceSupabase
@@ -107,8 +108,8 @@ export async function GET(request: NextRequest) {
 
     const topWorkers = workers.map((w) => ({
       id: w.id,
-      name: w.name || "Unknown",
-      earnings: w.total_earnings || 0,
+      name: w.full_name || "Unknown",
+      earnings: Number(w.total_earnings || 0),
     }));
 
     return NextResponse.json({

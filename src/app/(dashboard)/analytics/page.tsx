@@ -2,6 +2,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RevenueChart, ServiceDistributionChart, TopWorkersChart, UserGrowthChart } from "@/components/dashboard/charts/chart-wrapper";
+import { WORKER_STATUS } from "@/lib/constants";
 
 async function getAnalyticsData() {
   const supabase = await createServiceRoleClient();
@@ -16,9 +17,9 @@ async function getAnalyticsData() {
       .gte("created_at", thirtyDaysAgo.toISOString()),
     supabase.from("services").select("category, id").limit(1000),
     supabase
-      .from("workers")
-      .select("id, name, total_earnings")
-      .eq("status", "verified")
+      .from("worker_profiles")
+      .select("id, full_name, total_earnings")
+      .eq("verification_status", WORKER_STATUS.VERIFIED)
       .order("total_earnings", { ascending: false })
       .limit(10),
   ]);
@@ -53,8 +54,8 @@ async function getAnalyticsData() {
 
   const topWorkers = workers.map((w) => ({
     id: w.id,
-    name: w.name || "Unknown",
-    earnings: w.total_earnings || 0,
+    name: w.full_name || "Unknown",
+    earnings: Number(w.total_earnings || 0),
   }));
 
   const userGrowthData = Array.from({ length: 30 }, (_, i) => {

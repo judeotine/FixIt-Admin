@@ -1,4 +1,5 @@
 import { OTPForm } from "@/components/otp-form";
+import Image from "next/image";
 
 export default function VerifyOTPPage() {
   return (
@@ -9,12 +10,12 @@ export default function VerifyOTPPage() {
         </div>
       </div>
       <div className="relative hidden w-1/2 lg:block">
-        <img
-          alt="Authentication"
+        <Image
+          src="/otp.gif"
+          alt="Verify OTP"
           className="absolute inset-0 h-full w-full object-cover"
-          height={1080}
-          src="/placeholder.svg"
           width={1920}
+          height={1080}
         />
       </div>
     </div>

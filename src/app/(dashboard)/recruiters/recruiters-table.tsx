@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Eye } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 interface Recruiter {
   id: string;
@@ -55,7 +56,7 @@ export function RecruitersTable({ data }: { data: Recruiter[] }) {
     {
       key: "created_at",
       header: "Date Joined",
-      render: (value: string) => new Date(value).toLocaleDateString(),
+      render: (value: string) => formatDate(value),
     },
     {
       key: "actions",

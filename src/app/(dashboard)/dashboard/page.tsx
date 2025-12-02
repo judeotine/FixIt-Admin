@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { WORKER_STATUS } from "@/lib/constants";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { RevenueChart, ServiceDistributionChart, TopWorkersChart, UserGrowthChart } from "@/components/dashboard/charts/chart-wrapper";
@@ -15,9 +16,9 @@ async function getDashboardData() {
   const [workersResult, recruitersResult, transactionsResult, bookingsResult] =
     await Promise.all([
       supabase
-        .from("workers")
-        .select("id, status, total_earnings, rating")
-        .eq("status", "verified"),
+        .from("worker_profiles")
+        .select("id, verification_status, total_earnings, rating")
+        .eq("verification_status", WORKER_STATUS.VERIFIED),
       supabase.from("recruiters").select("id").limit(1000),
       supabase
         .from("transactions")
@@ -51,14 +52,17 @@ async function getDashboardData() {
   const platformCommission = monthlyRevenue * 0.1;
   const averageRating =
     workers.length > 0
-      ? workers.reduce((sum, w) => sum + (w.rating || 0), 0) / workers.length
+      ? workers.reduce(
+          (sum, w) => sum + (w.rating ? Number(w.rating) : 0),
+          0
+        ) / workers.length
       : 0;
   const activeBookings = bookings.length;
 
   const pendingVerificationsResult = await supabase
-    .from("workers")
+    .from("worker_profiles")
     .select("id")
-    .eq("status", "pending")
+    .eq("verification_status", WORKER_STATUS.PENDING)
     .limit(1000);
 
   const pendingVerifications = pendingVerificationsResult.data?.length || 0;
@@ -94,17 +98,17 @@ async function getDashboardData() {
   );
 
   const topWorkersResult = await supabase
-    .from("workers")
-    .select("id, name, total_earnings")
-    .eq("status", "verified")
+    .from("worker_profiles")
+    .select("id, full_name, total_earnings")
+    .eq("verification_status", WORKER_STATUS.VERIFIED)
     .order("total_earnings", { ascending: false })
     .limit(10);
 
   const topWorkers =
     topWorkersResult.data?.map((w) => ({
       id: w.id,
-      name: w.name || "Unknown",
-      earnings: w.total_earnings || 0,
+      name: w.full_name || "Unknown",
+      earnings: Number(w.total_earnings || 0),
     })) || [];
 
   const userGrowthData = Array.from({ length: 30 }, (_, i) => {

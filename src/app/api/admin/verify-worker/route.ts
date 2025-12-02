@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceRoleClient, createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { verifyWorkerSchema } from "@/lib/validations";
+import { WORKER_STATUS, ADMIN_ROLE } from "@/lib/constants";
+import { getSession } from "@/lib/auth/session";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    const session = await getSession();
+    if (!session || session.role !== ADMIN_ROLE) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -17,8 +15,7 @@ export async function POST(request: NextRequest) {
     const { data: adminUser } = await serviceSupabase
       .from("admin_users")
       .select("*")
-      .eq("email", user.email)
-      .eq("role", "admin")
+      .eq("id", session.adminId)
       .single();
 
     if (!adminUser) {
@@ -34,7 +31,7 @@ export async function POST(request: NextRequest) {
       "unknown";
 
     const { data: worker, error: workerError } = await serviceSupabase
-      .from("workers")
+      .from("worker_profiles")
       .select("*")
       .eq("id", workerId)
       .single();
@@ -46,12 +43,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const updateData: any = {
-      status: status === "approved" ? "verified" : "suspended",
+    const updateData = {
+      verification_status:
+        status === "approved" ? WORKER_STATUS.VERIFIED : WORKER_STATUS.SUSPENDED,
     };
 
     const { error: updateError } = await serviceSupabase
-      .from("workers")
+      .from("worker_profiles")
       .update(updateData)
       .eq("id", workerId);
 
@@ -71,7 +69,7 @@ export async function POST(request: NextRequest) {
         worker_id: workerId,
         status,
         rejection_reason: rejectionReason,
-        previous_status: worker.status,
+        previous_status: worker.verification_status,
       },
       ip_address: ipAddress,
       user_agent: request.headers.get("user-agent") || null,
@@ -81,7 +79,7 @@ export async function POST(request: NextRequest) {
       success: true,
       worker: {
         ...worker,
-        status: updateData.status,
+        verification_status: updateData.verification_status,
       },
     });
   } catch (error) {

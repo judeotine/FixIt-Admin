@@ -12,21 +12,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, CheckCircle, XCircle } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Download, Mail, Phone, User } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { WorkerRecord } from "@/lib/workers";
 
 interface VerificationModalProps {
-  workerId: string;
-  workerName: string;
+  worker: WorkerRecord;
 }
 
-export function VerificationModal({
-  workerId,
-  workerName,
-}: VerificationModalProps) {
+export function VerificationModal({ worker }: VerificationModalProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"approved" | "rejected" | null>(null);
@@ -47,8 +43,9 @@ export function VerificationModal({
       const response = await fetch("/api/admin/verify-worker", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          workerId,
+          workerId: worker.id,
           status: status!,
           rejectionReason: status === "rejected" ? rejectionReason : undefined,
         }),
@@ -80,14 +77,64 @@ export function VerificationModal({
           <Eye className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="w-full max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Verify Worker: {workerName}</DialogTitle>
+          <DialogTitle>Verify Worker: {worker.name}</DialogTitle>
           <DialogDescription>
             Review documents and approve or reject the verification request
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="border rounded-lg p-4 space-y-3">
+              <h4 className="font-medium">Worker Details</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{worker.name}</p>
+                    <p className="text-muted-foreground capitalize">
+                      {worker.service_category}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{worker.email || "No email"}</p>
+                    <p className="text-muted-foreground text-xs">Email</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{worker.phone || "No phone"}</p>
+                    <p className="text-muted-foreground text-xs">Phone</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="border rounded-lg p-4 space-y-3">
+              <h4 className="font-medium">Uploaded Documents</h4>
+              <div className="space-y-2">
+                <DocumentLink
+                  label="National ID"
+                  description="Government issued identification"
+                  href={worker.national_id_url}
+                />
+                <DocumentLink
+                  label="Certification"
+                  description="Professional certificates"
+                  href={worker.certification_url}
+                />
+                <DocumentLink
+                  label="Profile Photo"
+                  description="Profile picture provided"
+                  href={worker.avatar_url || undefined}
+                />
+              </div>
+            </div>
+          </div>
           <div className="border rounded-lg p-4">
             <h4 className="font-medium mb-2">Document Checklist</h4>
             <div className="space-y-2">
@@ -172,6 +219,43 @@ export function VerificationModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface DocumentLinkProps {
+  label: string;
+  description: string;
+  href?: string | null;
+}
+
+function DocumentLink({ label, description, href }: DocumentLinkProps) {
+  const isAvailable = Boolean(href);
+
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-lg border p-3">
+      <div>
+        <p className="font-medium text-sm">{label}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        asChild={isAvailable}
+        disabled={!isAvailable}
+      >
+        {isAvailable ? (
+          <a href={href!} target="_blank" rel="noreferrer">
+            <Download className="mr-2 h-4 w-4" />
+            View
+          </a>
+        ) : (
+          <>
+            <Download className="mr-2 h-4 w-4" />
+            Missing
+          </>
+        )}
+      </Button>
+    </div>
   );
 }
 

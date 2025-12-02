@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 async function getRecruiter(id: string) {
   const supabase = await createServiceRoleClient();
@@ -77,7 +78,7 @@ export default async function RecruiterDetailsPage({
               <div>
                 <p className="text-sm text-muted-foreground">Date Joined</p>
                 <p className="font-medium">
-                  {new Date(recruiter.created_at).toLocaleDateString()}
+                  {formatDate(recruiter.created_at)}
                 </p>
               </div>
             </div>

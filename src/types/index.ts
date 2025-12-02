@@ -21,16 +21,20 @@ export interface OTPCode {
 
 export interface Worker {
   id: string;
+  user_id: string;
   name: string;
   email: string;
   phone: string;
   service_category: string;
   status: "pending" | "verified" | "suspended";
-  rating?: number | null;
+  rating: number | null;
   total_jobs: number;
   total_earnings: number;
   date_joined: string;
   avatar_url?: string | null;
+  onboarding_completed: boolean;
+  national_id_url: string;
+  certification_url?: string | null;
 }
 
 export interface Recruiter {

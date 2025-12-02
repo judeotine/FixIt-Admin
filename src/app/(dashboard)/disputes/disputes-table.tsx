@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import Link from "next/link";
+import { formatDate } from "@/lib/utils";
 
 interface Dispute {
   id: string;
@@ -33,7 +34,7 @@ export function DisputesTable({ data }: { data: Dispute[] }) {
     {
       key: "created_at",
       header: "Date Raised",
-      render: (value: string) => new Date(value).toLocaleDateString(),
+      render: (value: string) => formatDate(value),
     },
     {
       key: "recruiter_id",
